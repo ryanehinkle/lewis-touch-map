@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Vector Map with Information Pins</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map { 
+      height: calc(100% - 20px); /* Fill the viewport height leaving space for the coordinates box */
+      width: 100vw; /* Fill the entire viewport width */
+    }
+    #coordinates-box {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      text-align: right; /* Align text to the right */
+    }
+    .custom-marker {
+    width: 32px;
+    height: 32px;
+    background-color: red; /* Customize marker color */
+    border-radius: 50%; /* Circle shape */
+    }
+  </style>
+</head>
+<body>
+  <div id="coordinates-box">Coordinates: <span id="coordinates">N/A</span></div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map', {
+      minZoom: 3, // Set the minimum zoom level
+      maxZoom: 5, // Set the maximum zoom level
+    }).setView([0, 0], 1); // Set initial view
+
+    // Load and add the custom vector image overlay
+    var imageUrl = 'map.svg'; // Update with your SVG image path
+    var imageBounds = [[-90, -180], [90, 180]]; // Set the bounds of the image (latitude and longitude)
+    L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+    // Set the map boundaries
+    map.setMaxBounds(imageBounds);
+    map.on('drag', function() {
+      map.panInsideBounds(imageBounds, { animate: false });
+    });
+
+    // Define marker locations and information with custom icons and pop-up content
+    var markerLocations = [
+        { latlng: [48, 8], info: '<b>L Wing of AS</b>', icon: L.divIcon({ className: 'custom-marker' }) },
+        { latlng: [30, 40], info: '<b>Information for Marker 2</b>', icon: L.divIcon({ className: 'custom-marker' }) },
+        // Add more marker locations as needed
+    ];
+
+    // Add markers to the map with custom icons and pop-up content
+    markerLocations.forEach(function(marker) {
+        L.marker(marker.latlng, { icon: marker.icon })
+        .bindPopup(marker.info)
+        .addTo(map);
+    });
+
+    // Update coordinates box when mouse moves on the map
+    map.on('mousemove', function(e) {
+      var coordinatesElement = document.getElementById('coordinates');
+      if (coordinatesElement) {
+        coordinatesElement.textContent = e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
+      }
+    });
+  </script>
+</body>
+</html>
